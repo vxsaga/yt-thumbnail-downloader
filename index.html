@@ -1,519 +1,286 @@
 <!DOCTYPE html>
-<html lang="en" >
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>YouTube Thumbnail & Shorts Downloader</title>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Poppins&display=swap"
-    rel="stylesheet"
-  />
+  <link rel="icon" href="https://www.youtube.com/s/desktop/6bde7cdb/img/favicon_32x32.png">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    /* Reset */
-    * {
-      box-sizing: border-box;
-    }
     body {
-      margin: 0;
-      padding: 40px 20px;
-      font-family: 'Poppins', sans-serif;
+      font-family: Arial, sans-serif;
       background-color: #121212;
       color: #fff;
-      min-height: 100vh;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      font-size: 24px;
       display: flex;
-      flex-direction: column;
+      justify-content: center;
       align-items: center;
+      gap: 10px;
     }
-    header {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      margin-bottom: 40px;
+    h1 img {
+      height: 28px;
     }
-    header img {
-      height: 36px;
-      user-select: none;
-    }
-    header h1 {
-      font-weight: 600;
-      font-size: 28px;
-      margin: 0;
-      user-select: none;
-    }
-
-    /* Input container */
-    .input-container {
-      width: 100%;
-      max-width: 540px;
-      display: flex;
-      gap: 14px;
-      margin-bottom: 20px;
-    }
-    input[type='text'] {
-      flex-grow: 1;
-      padding: 16px 20px;
-      border-radius: 8px;
-      border: none;
-      font-size: 18px;
-      outline: none;
-      background-color: #222;
-      color: #fff;
-      box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
-      transition: box-shadow 0.3s ease;
-    }
-    input[type='text']:focus {
-      box-shadow: 0 0 15px #e50914;
-    }
-
-    select {
-      width: 160px;
-      border-radius: 8px;
-      border: none;
-      background-color: #222;
-      color: #fff;
+    input, select, button {
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 5px;
       font-size: 16px;
-      padding: 0 10px;
-      box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
-      transition: box-shadow 0.3s ease;
+      width: 100%;
+      max-width: 600px;
+      box-sizing: border-box;
     }
-    select:focus {
-      box-shadow: 0 0 15px #e50914;
-      outline: none;
+    input, select {
+      background-color: #1e1e1e;
+      color: #fff;
+      border: 1px solid #333;
     }
-
     button {
       background-color: #e50914;
-      border: none;
-      border-radius: 8px;
       color: white;
-      font-weight: 600;
-      font-size: 18px;
-      padding: 0 28px;
+      border: none;
       cursor: pointer;
-      transition: background-color 0.3s ease, transform 0.2s ease;
-      box-shadow: 0 4px 12px rgba(229, 9, 20, 0.6);
-      user-select: none;
     }
-    button:hover:not(:disabled) {
+    button:hover {
       background-color: #bf0811;
-      transform: scale(1.05);
-      box-shadow: 0 6px 20px rgba(255, 0, 0, 0.8);
-    }
-    button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      box-shadow: none;
-    }
-
-    /* Result */
-    #result, #shorts-result {
-      margin-top: 30px;
-      max-width: 540px;
-      width: 100%;
-      text-align: center;
     }
     #result img, #shorts-result img {
-      width: 100%;
-      border-radius: 10px;
-      box-shadow: 0 0 15px rgba(255, 0, 0, 0.6);
-      user-select: none;
+      max-width: 100%;
+      border-radius: 8px;
+      margin-top: 20px;
     }
-    #download-link, #shorts-download-link {
+    #shorts-download-link, .video-download-link, .recent-btn {
       display: inline-block;
-      margin-top: 16px;
-      background-color: #e50914;
-      color: #fff;
-      padding: 14px 28px;
-      border-radius: 8px;
-      font-weight: 600;
+      margin-top: 10px;
+      color: #00f;
       text-decoration: none;
-      box-shadow: 0 4px 12px rgba(229, 9, 20, 0.6);
-      transition: background-color 0.3s ease;
-      user-select: none;
+      font-weight: bold;
     }
-    #download-link:hover, #shorts-download-link:hover {
-      background-color: #bf0811;
+    #shorts-download-link:hover, .video-download-link:hover, .recent-btn:hover {
+      text-decoration: underline;
     }
-
-    /* Copy shareable link */
-    #copy-share-btn {
-      margin-top: 16px;
-      padding: 10px 24px;
-      background-color: #222;
-      border: 2px solid #e50914;
-      border-radius: 8px;
-      color: #e50914;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background-color 0.3s ease, color 0.3s ease;
-      user-select: none;
-    }
-    #copy-share-btn:hover {
-      background-color: #e50914;
-      color: white;
-    }
-    #copy-status {
-      margin-top: 8px;
-      font-size: 14px;
-      color: lightgreen;
-      min-height: 18px;
-      user-select: none;
-    }
-
-    /* Recent searches */
-    #recent-searches {
-      margin-top: 30px;
-      max-width: 540px;
-      width: 100%;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
+    .success { color: lightgreen; }
+    .error { color: #ff4d4d; }
+    small {
+      display: block;
+      margin-top: 10px;
+      color: gray;
     }
     #recent-searches button {
       background: #333;
       color: #eee;
       border: none;
-      padding: 8px 14px;
-      border-radius: 6px;
+      margin: 4px;
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
       font-size: 14px;
-      cursor: pointer;
-      user-select: none;
-      transition: background-color 0.3s ease;
     }
-    #recent-searches button:hover {
-      background-color: #e50914;
-      color: white;
-    }
-
-    /* Success/error messages */
-    #message, #shorts-message {
-      margin-top: 18px;
-      font-weight: 600;
-      font-size: 16px;
-      min-height: 24px;
-      user-select: none;
-    }
-    #message.error, #shorts-message.error {
-      color: #f44336;
-    }
-    #message.success, #shorts-message.success {
-      color: #4caf50;
-    }
-
-    /* Admin analytics */
-    #admin-controls {
-      margin-top: 40px;
-      max-width: 540px;
-      width: 100%;
-      text-align: center;
-      user-select: none;
-    }
-    #view-analytics {
-      background-color: #222;
-      border: 2px solid #e50914;
-      color: #e50914;
-      font-weight: 600;
-      padding: 10px 24px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background-color 0.3s ease, color 0.3s ease;
-      margin-bottom: 10px;
-    }
-    #view-analytics:hover {
-      background-color: #e50914;
-      color: white;
-    }
-    #analytics-output {
-      background-color: #222;
-      color: #fff;
-      padding: 12px;
-      border-radius: 8px;
-      max-height: 240px;
-      overflow-y: auto;
-      font-family: monospace;
-      text-align: left;
-      margin-bottom: 20px;
-      white-space: pre-wrap;
-      user-select: text;
-    }
-    #analytics-chart {
-      max-width: 540px;
-      width: 100%;
-      height: 300px;
-      margin: 0 auto 40px;
-    }
-
-    /* Section titles */
-    .section-title {
-      font-weight: 700;
-      font-size: 22px;
-      margin-top: 60px;
-      margin-bottom: 24px;
-      border-bottom: 2px solid #e50914;
-      padding-bottom: 8px;
-      max-width: 540px;
-      width: 100%;
-      user-select: none;
-    }
-
-    @media (max-width: 600px) {
-      header h1 {
-        font-size: 22px;
-      }
-      input[type='text'] {
-        font-size: 16px;
-      }
-      select {
-        width: 130px;
-        font-size: 14px;
-      }
-      button {
-        font-size: 16px;
-        padding: 0 20px;
-      }
-      #download-link, #shorts-download-link {
-        padding: 12px 20px;
-        font-size: 16px;
-      }
-      #copy-share-btn {
-        padding: 8px 20px;
-        font-size: 14px;
-      }
-      .section-title {
-        font-size: 18px;
-        margin-top: 40px;
-      }
-    }
+    canvas { margin-top: 30px; }
   </style>
 </head>
 <body>
-  <header>
-    <img
-      src="https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg"
-      alt="YouTube Logo"
-      draggable="false"
-    />
-    <h1>YouTube Thumbnail & Shorts Downloader</h1>
-  </header>
+  <h1>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg" alt="YouTube Logo">
+    YouTube Thumbnail & Shorts Downloader
+  </h1>
 
-  <!-- Thumbnail Downloader Section -->
-  <section aria-labelledby="thumbnail-section-title">
-    <h2 id="thumbnail-section-title" class="section-title">YouTube Thumbnail Downloader</h2>
-    <div class="input-container">
-      <input
-        type="text"
-        id="youtube-url"
-        placeholder="Paste YouTube Video URL..."
-        autocomplete="off"
-        aria-label="YouTube Video URL"
-      />
-      <select id="quality" title="Select Thumbnail Quality" aria-label="Thumbnail Quality">
-        <option value="maxresdefault">Max Resolution</option>
-        <option value="hqdefault">High Quality</option>
-        <option value="mqdefault">Medium Quality</option>
-        <option value="sddefault">Standard Definition</option>
-      </select>
-      <button id="download-btn">Get Thumbnail</button>
-    </div>
+  <input type="text" id="youtube-url" placeholder="Paste YouTube Video URL..." />
+  <div id="recent-searches"></div>
+  <select id="quality">
+    <option value="maxresdefault">Max Resolution</option>
+    <option value="hqdefault">High Quality</option>
+    <option value="mqdefault">Medium Quality</option>
+    <option value="sddefault">Standard Definition</option>
+  </select>
+  <button id="download-btn">Get Thumbnail</button>
 
-    <div id="message" aria-live="polite"></div>
-    <div id="result" aria-live="polite"></div>
-    <button id="copy-share-btn" style="display:none;">🔗 Copy Shareable Link</button>
-    <div id="copy-status"></div>
-    <div id="recent-searches"></div>
-  </section>
+  <p id="copy-status"></p>
+  <div id="message"></div>
+  <div id="result"></div>
 
-  <!-- Shorts Downloader Section -->
-  <section aria-labelledby="shorts-section-title">
-    <h2 id="shorts-section-title" class="section-title">YouTube Shorts Downloader</h2>
-    <div class="input-container">
-      <input
-        type="text"
-        id="shorts-url"
-        placeholder="Paste YouTube Shorts URL (e.g. https://youtube.com/shorts/VIDEOID)"
-        autocomplete="off"
-        aria-label="YouTube Shorts URL"
-      />
-      <button id="shorts-download-btn">Get Shorts Video</button>
-    </div>
+  <hr style="margin: 40px 0; border-color: #333;">
 
-    <div id="shorts-message" aria-live="polite"></div>
-    <div id="shorts-result" aria-live="polite"></div>
-  </section>
+  <input type="text" id="shorts-url" placeholder="Paste YouTube Shorts URL..." />
+  <button id="shorts-download-btn">Get Shorts Video</button>
 
-  <!-- Admin Analytics Section -->
+  <div id="shorts-message"></div>
+  <div id="shorts-result"></div>
+
   <div id="admin-controls" style="display:none;">
     <button id="view-analytics">View Analytics (JSON)</button>
     <pre id="analytics-output"></pre>
-    <canvas id="analytics-chart"></canvas>
+    <canvas id="analytics-chart" width="400" height="200"></canvas>
   </div>
 
+  <small>Downloads powered by a third-party service. We do not host or store any videos.</small>
+
   <script>
-    // Elements for Thumbnail Downloader
-    const inputURL = document.getElementById('youtube-url');
-    const qualitySelect = document.getElementById('quality');
-    const downloadBtn = document.getElementById('download-btn');
-    const resultDiv = document.getElementById('result');
-    const messageDiv = document.getElementById('message');
-    const copyShareBtn = document.getElementById('copy-share-btn');
-    const copyStatus = document.getElementById('copy-status');
-    const recentSearchesDiv = document.getElementById('recent-searches');
+    const downloadBtn = document.getElementById("download-btn");
+    const resultDiv = document.getElementById("result");
+    const messageDiv = document.getElementById("message");
+    const copyStatus = document.getElementById("copy-status");
 
-    // Elements for Shorts Downloader
-    const shortsInput = document.getElementById('shorts-url');
-    const shortsBtn = document.getElementById('shorts-download-btn');
-    const shortsResultDiv = document.getElementById('shorts-result');
-    const shortsMessageDiv = document.getElementById('shorts-message');
+    downloadBtn.addEventListener("click", () => {
+      const url = document.getElementById("youtube-url").value;
+      const quality = document.getElementById("quality").value;
+      const videoId = extractVideoID(url);
 
-    // Admin elements
-    const adminControls = document.getElementById('admin-controls');
-    const viewAnalyticsBtn = document.getElementById('view-analytics');
-    const analyticsOutput = document.getElementById('analytics-output');
-    const analyticsChartCanvas = document.getElementById('analytics-chart');
-
-    // Extract video ID robustly for thumbnails (normal YouTube URLs)
-    function extractVideoID(url) {
-      if (!url) return null;
-      const patterns = [
-        /(?:https?:\/\/)?(?:www\.)?youtu\.be\/([0-9A-Za-z_-]{11})/,
-        /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([0-9A-Za-z_-]{11})/,
-        /(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([0-9A-Za-z_-]{11})/,
-        /(?:https?:\/\/)?(?:www\.)?youtube\.com\/v\/([0-9A-Za-z_-]{11})/,
-        /(?:https?:\/\/)?(?:www\.)?youtube\.com\/shorts\/([0-9A-Za-z_-]{11})/
-      ];
-      for (const pattern of patterns) {
-        const match = url.match(pattern);
-        if (match && match[1]) return match[1];
+      if (videoId) {
+        const thumbnailURL = `https://img.youtube.com/vi/${videoId}/${quality}.jpg`;
+        const downloadPageURL = `https://www.y2mate.is/youtube/${videoId}`;
+        resultDiv.innerHTML = `
+          <img src="${thumbnailURL}" alt="Thumbnail" />
+          <br><a href="${thumbnailURL}" download>Download Thumbnail</a>
+          <br><a href="${downloadPageURL}" target="_blank" class="video-download-link">⬇️ Download Video</a>
+          <br><button onclick="copyShareableLink('${url}')">🔗 Copy Shareable Link</button>
+        `;
+        messageDiv.textContent = "✅ Thumbnail loaded successfully!";
+        messageDiv.className = "success";
+        saveSearch(url);
+        trackDownload(videoId);
+      } else {
+        resultDiv.innerHTML = '';
+        messageDiv.textContent = "❌ Invalid YouTube URL. Please try again.";
+        messageDiv.className = "error";
       }
-      return null;
-    }
+    });
 
-    // Extract Shorts video ID specifically from shorts URLs
-    function extractShortsID(url) {
-      if (!url) return null;
-      const shortsPattern = /(?:https?:\/\/)?(?:www\.)?youtube\.com\/shorts\/([0-9A-Za-z_-]{11})/;
-      const match = url.match(shortsPattern);
+    function extractVideoID(url) {
+      const regExp = /(?:v=|\/)([0-9A-Za-z_-]{11})/;
+      const match = url.match(regExp);
       return match ? match[1] : null;
     }
 
-    // Load and save recent searches (for thumbnails)
-    function loadRecentSearches() {
-      const searches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
-      return searches;
+    function saveSearch(url) {
+      let history = JSON.parse(localStorage.getItem("recentSearches") || "[]");
+      history = history.filter(item => item !== url);
+      history.unshift(url);
+      if (history.length > 5) history = history.slice(0, 5);
+      localStorage.setItem("recentSearches", JSON.stringify(history));
+      renderSearchHistory();
     }
-    function saveRecentSearches(searches) {
-      localStorage.setItem('recentSearches', JSON.stringify(searches));
+
+    function renderSearchHistory() {
+      const history = JSON.parse(localStorage.getItem("recentSearches") || "[]");
+      const container = document.getElementById("recent-searches");
+      if (history.length === 0) return container.innerHTML = '';
+      container.innerHTML = `<p style="margin:5px 0;">🔁 Recent Searches:</p>` +
+        history.map(url => `<button class="recent-btn" onclick="fillURL('${url}')">${url}</button>`).join('');
     }
-    function renderRecentSearches() {
-      const searches = loadRecentSearches();
-      if (searches.length === 0) {
-        recentSearchesDiv.innerHTML = '';
-        return;
-      }
-      recentSearchesDiv.innerHTML =
-        '<p style="margin-bottom:8px; font-weight:600; user-select:none;">🔁 Recent Searches:</p>' +
-        searches
-          .map(
-            (url) =>
-              `<button type="button" aria-label="Search for ${url}" onclick="fillURL('${url}')">${url}</button>`
-          )
-          .join('');
-    }
+
     function fillURL(url) {
-      inputURL.value = url;
-      messageDiv.textContent = '';
-      resultDiv.innerHTML = '';
-      copyShareBtn.style.display = 'none';
-      copyStatus.textContent = '';
-    }
-    window.fillURL = fillURL; // expose globally for recent search buttons
-
-    // Add to recent searches (max 5)
-    function addToRecentSearches(url) {
-      if (!url) return;
-      let searches = loadRecentSearches();
-      searches = searches.filter((u) => u !== url);
-      searches.unshift(url);
-      if (searches.length > 5) searches = searches.slice(0, 5);
-      saveRecentSearches(searches);
-      renderRecentSearches();
+      document.getElementById("youtube-url").value = url;
     }
 
-    // Analytics: track downloads per videoId
+    function copyShareableLink(url) {
+      const fullLink = `${location.origin}${location.pathname}?url=${encodeURIComponent(url)}`;
+      navigator.clipboard.writeText(fullLink)
+        .then(() => {
+          copyStatus.textContent = "🔗 Shareable link copied!";
+          setTimeout(() => copyStatus.textContent = "", 3000);
+        })
+        .catch(() => {
+          copyStatus.textContent = "❌ Failed to copy share link.";
+        });
+    }
+
     function trackDownload(videoId) {
-      if (!videoId) return;
-      const analytics = JSON.parse(localStorage.getItem('analytics') || '{}');
+      const analytics = JSON.parse(localStorage.getItem("analytics") || "{}");
       const date = new Date().toLocaleDateString();
       if (!analytics[videoId]) analytics[videoId] = { count: 0, lastUsed: null };
       analytics[videoId].count += 1;
       analytics[videoId].lastUsed = date;
-      localStorage.setItem('analytics', JSON.stringify(analytics));
+      localStorage.setItem("analytics", JSON.stringify(analytics));
     }
+
     function getAnalytics() {
-      return JSON.parse(localStorage.getItem('analytics') || '{}');
+      return JSON.parse(localStorage.getItem("analytics") || "{}");
     }
+
+    const isAdmin = new URLSearchParams(window.location.search).get("admin") === "true";
+    if (isAdmin) {
+      document.getElementById("admin-controls").style.display = "block";
+      document.getElementById("view-analytics").addEventListener("click", () => {
+        const data = getAnalytics();
+        document.getElementById("analytics-output").textContent = JSON.stringify(data, null, 2);
+        renderChart(data);
+      });
+    }
+
     function renderChart(data) {
-      if (!analyticsChartCanvas) return;
-      const ctx = analyticsChartCanvas.getContext('2d');
-      if (window.analyticsChartInstance) {
-        window.analyticsChartInstance.destroy();
-      }
+      const ctx = document.getElementById('analytics-chart').getContext('2d');
       const labels = Object.keys(data);
-      const counts = labels.map((id) => data[id].count);
-      window.analyticsChartInstance = new Chart(ctx, {
+      const counts = labels.map(id => data[id].count);
+
+      new Chart(ctx, {
         type: 'bar',
         data: {
-          labels,
-          datasets: [
-            {
-              label: 'Download Count',
-              data: counts,
-              backgroundColor: '#ff0000',
-            },
-          ],
+          labels: labels,
+          datasets: [{
+            label: 'Download Count',
+            data: counts,
+            backgroundColor: '#ff0000'
+          }]
         },
         options: {
           responsive: true,
           scales: {
-            y: { beginAtZero: true },
-          },
-        },
+            y: { beginAtZero: true }
+          }
+        }
       });
     }
 
-    // Copy shareable link for thumbnails
-    copyShareBtn.addEventListener('click', () => {
-      const inputVal = inputURL.value.trim();
-      if (!inputVal) return;
-      const shareURL =
-        location.origin + location.pathname + '?url=' + encodeURIComponent(inputVal);
-      navigator.clipboard
-        .writeText(shareURL)
-        .then(() => {
-          copyStatus.textContent = '🔗 Shareable link copied!';
-          setTimeout(() => (copyStatus.textContent = ''), 3000);
-        })
-        .catch(() => {
-          copyStatus.textContent = '❌ Failed to copy share link.';
-        });
-    });
+    // Shorts Logic
+    const shortsBtn = document.getElementById("shorts-download-btn");
+    const shortsInput = document.getElementById("shorts-url");
+    const shortsResultDiv = document.getElementById("shorts-result");
+    const shortsMessageDiv = document.getElementById("shorts-message");
 
-    // Thumbnail downloader button click
-    downloadBtn.addEventListener('click', () => {
-      const url = inputURL.value.trim();
-      const quality = qualitySelect.value;
-      messageDiv.textContent = '';
-      copyStatus.textContent = '';
-      resultDiv.innerHTML = '';
-      copyShareBtn.style.display = 'none';
+    shortsBtn.addEventListener("click", () => {
+      const url = shortsInput.value.trim();
+      shortsMessageDiv.textContent = '';
+      shortsResultDiv.innerHTML = '';
 
-      const videoId = extractVideoID(url);
-      if (!videoId) {
-        messageDiv.textContent = '❌ Invalid YouTube URL. Please try again.';
-        messageDiv.className = 'error';
+      const shortsID = extractShortsID(url);
+      if (!shortsID) {
+        shortsMessageDiv.textContent = '❌ Invalid YouTube Shorts URL. Please try again.';
+        shortsMessageDiv.className = 'error';
         return;
       }
 
-      // Construct thumbnail URL
-      const thumbnailURL = `https://img.youtube.com
+      const thumbnailURL = `https://img.youtube.com/vi/${shortsID}/maxresdefault.jpg`;
+      const downloadShortURL = `https://www.y2mate.is/youtube/${shortsID}`;
+
+      shortsMessageDiv.textContent = '✅ Shorts thumbnail loaded!';
+      shortsMessageDiv.className = 'success';
+
+      shortsResultDiv.innerHTML = `
+        <img src="${thumbnailURL}" alt="Shorts Thumbnail" />
+        <br><a href="https://youtube.com/shorts/${shortsID}" target="_blank" id="shorts-download-link">▶️ Watch on YouTube</a>
+        <br><a href="${downloadShortURL}" target="_blank" class="video-download-link">⬇️ Download Shorts Video</a>
+      `;
+    });
+
+    function extractShortsID(url) {
+      const pattern = /(?:https?:\/\/)?(?:www\.)?youtube\.com\/shorts\/([0-9A-Za-z_-]{11})/;
+      const match = url.match(pattern);
+      return match ? match[1] : null;
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      const query = new URLSearchParams(window.location.search);
+      const presetURL = query.get("url");
+      if (presetURL) {
+        document.getElementById("youtube-url").value = presetURL;
+        downloadBtn.click();
+      }
+      renderSearchHistory();
+    });
+  </script>
+</body>
+</html>
