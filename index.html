@@ -53,11 +53,15 @@
   </select>
   
   <button id="download-btn">Get Thumbnail</button>
-  <button id="view-analytics">View Analytics</button>
+
+  <!-- Hidden Admin Controls -->
+  <div id="admin-controls" style="display:none;">
+    <button id="view-analytics">View Analytics</button>
+    <pre id="analytics-output"></pre>
+  </div>
 
   <p id="success-msg"></p>
   <div id="result"></div>
-  <pre id="analytics-output"></pre>
 
   <script>
     const downloadBtn = document.getElementById("download-btn");
@@ -76,9 +80,7 @@
           <br/><a href="${thumbnailURL}" download>Download Thumbnail</a>
         `;
         successMsg.textContent = "✅ Thumbnail loaded successfully!";
-
-        // 📊 Track download
-        trackDownload(videoId);
+        trackDownload(videoId); // Track analytics
       } else {
         resultDiv.innerHTML = '';
         successMsg.textContent = '';
@@ -112,11 +114,15 @@
       return JSON.parse(localStorage.getItem("analytics") || "{}");
     }
 
-    // 📊 View analytics
-    document.getElementById("view-analytics").addEventListener("click", () => {
-      const data = getAnalytics();
-      document.getElementById("analytics-output").textContent = JSON.stringify(data, null, 2);
-    });
+    // === Admin Access Check ===
+    const isAdmin = new URLSearchParams(window.location.search).get("admin") === "true";
+    if (isAdmin) {
+      document.getElementById("admin-controls").style.display = "block";
+      document.getElementById("view-analytics").addEventListener("click", () => {
+        const data = getAnalytics();
+        document.getElementById("analytics-output").textContent = JSON.stringify(data, null, 2);
+      });
+    }
   </script>
 </body>
 </html>
