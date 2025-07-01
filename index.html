@@ -131,7 +131,7 @@
 
       if (videoId) {
         const thumbnailURL = `https://img.youtube.com/vi/${videoId}/${quality}.jpg`;
-        const downloadPageURL = `https://www.y2mate.com/youtube/${videoId}`;
+        const downloadPageURL = `https://en.savefrom.net/1-Youtube-video-downloader.php?url=https://youtube.com/watch?v=${videoId}`;
         resultDiv.innerHTML = `
           <img src="${thumbnailURL}" alt="Thumbnail" />
           <br><a href="${thumbnailURL}" download>Download Thumbnail</a>
@@ -148,92 +148,6 @@
         messageDiv.className = "error";
       }
     });
-
-    function extractVideoID(url) {
-      const regExp = /(?:v=|\/)([0-9A-Za-z_-]{11})/;
-      const match = url.match(regExp);
-      return match ? match[1] : null;
-    }
-
-    function saveSearch(url) {
-      let history = JSON.parse(localStorage.getItem("recentSearches") || "[]");
-      history = history.filter(item => item !== url);
-      history.unshift(url);
-      if (history.length > 5) history = history.slice(0, 5);
-      localStorage.setItem("recentSearches", JSON.stringify(history));
-      renderSearchHistory();
-    }
-
-    function renderSearchHistory() {
-      const history = JSON.parse(localStorage.getItem("recentSearches") || "[]");
-      const container = document.getElementById("recent-searches");
-      if (history.length === 0) return container.innerHTML = '';
-      container.innerHTML = `<p style="margin:5px 0;">🔁 Recent Searches:</p>` +
-        history.map(url => `<button class="recent-btn" onclick="fillURL('${url}')">${url}</button>`).join('');
-    }
-
-    function fillURL(url) {
-      document.getElementById("youtube-url").value = url;
-    }
-
-    function copyShareableLink(url) {
-      const fullLink = `${location.origin}${location.pathname}?url=${encodeURIComponent(url)}`;
-      navigator.clipboard.writeText(fullLink)
-        .then(() => {
-          copyStatus.textContent = "🔗 Shareable link copied!";
-          setTimeout(() => copyStatus.textContent = "", 3000);
-        })
-        .catch(() => {
-          copyStatus.textContent = "❌ Failed to copy share link.";
-        });
-    }
-
-    function trackDownload(videoId) {
-      const analytics = JSON.parse(localStorage.getItem("analytics") || "{}");
-      const date = new Date().toLocaleDateString();
-      if (!analytics[videoId]) analytics[videoId] = { count: 0, lastUsed: null };
-      analytics[videoId].count += 1;
-      analytics[videoId].lastUsed = date;
-      localStorage.setItem("analytics", JSON.stringify(analytics));
-    }
-
-    function getAnalytics() {
-      return JSON.parse(localStorage.getItem("analytics") || "{}");
-    }
-
-    const isAdmin = new URLSearchParams(window.location.search).get("admin") === "true";
-    if (isAdmin) {
-      document.getElementById("admin-controls").style.display = "block";
-      document.getElementById("view-analytics").addEventListener("click", () => {
-        const data = getAnalytics();
-        document.getElementById("analytics-output").textContent = JSON.stringify(data, null, 2);
-        renderChart(data);
-      });
-    }
-
-    function renderChart(data) {
-      const ctx = document.getElementById('analytics-chart').getContext('2d');
-      const labels = Object.keys(data);
-      const counts = labels.map(id => data[id].count);
-
-      new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'Download Count',
-            data: counts,
-            backgroundColor: '#ff0000'
-          }]
-        },
-        options: {
-          responsive: true,
-          scales: {
-            y: { beginAtZero: true }
-          }
-        }
-      });
-    }
 
     const shortsBtn = document.getElementById("shorts-download-btn");
     const shortsInput = document.getElementById("shorts-url");
@@ -253,7 +167,7 @@
       }
 
       const thumbnailURL = `https://img.youtube.com/vi/${shortsID}/maxresdefault.jpg`;
-      const downloadShortURL = `https://www.y2mate.com/youtube/${shortsID}`;
+      const downloadShortURL = `https://en.savefrom.net/1-Youtube-video-downloader.php?url=https://youtube.com/watch?v=${shortsID}`;
 
       shortsMessageDiv.textContent = '✅ Shorts thumbnail loaded!';
       shortsMessageDiv.className = 'success';
@@ -263,22 +177,6 @@
         <br><a href="https://youtube.com/shorts/${shortsID}" target="_blank" class="video-download-link">▶️ Watch on YouTube</a>
         <br><a href="${downloadShortURL}" target="_blank" class="video-download-link">⬇️ Download Shorts Video</a>
       `;
-    });
-
-    function extractShortsID(url) {
-      const pattern = /(?:https?:\/\/)?(?:www\.)?youtube\.com\/shorts\/([0-9A-Za-z_-]{11})/;
-      const match = url.match(pattern);
-      return match ? match[1] : null;
-    }
-
-    window.addEventListener("DOMContentLoaded", () => {
-      const query = new URLSearchParams(window.location.search);
-      const presetURL = query.get("url");
-      if (presetURL) {
-        document.getElementById("youtube-url").value = presetURL;
-        downloadBtn.click();
-      }
-      renderSearchHistory();
     });
   </script>
 </body>
