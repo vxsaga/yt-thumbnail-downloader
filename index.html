@@ -75,20 +75,6 @@
     button:hover {
       opacity: 0.9;
     }
-    #examples {
-      margin-top: 2rem;
-    }
-    .example-buttons {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    .example-buttons button {
-      background: #666;
-      color: #fff;
-      font-size: 0.9rem;
-    }
     #thumbnail-result {
       margin-top: 2rem;
     }
@@ -107,15 +93,19 @@
     #qr-code {
       margin-top: 20px;
     }
+    .hidden {
+      display: none;
+    }
+    .error {
+      color: red;
+      margin-top: 1rem;
+    }
     footer {
       text-align: center;
       font-size: 0.9rem;
       padding: 1rem;
       background: var(--card);
       color: var(--text);
-    }
-    .hidden {
-      display: none;
     }
   </style>
 </head>
@@ -127,75 +117,77 @@
   </header>
 
   <main>
-    <p class="subheading">Paste a YouTube link below to get the thumbnail</p>
-    <input type="text" id="youtube-url" placeholder="Paste YouTube video URL here..." />
+    <p class="subheading">Paste a YouTube video link below to get the thumbnail</p>
+    <input type="text" id="youtube-url" placeholder="Paste YouTube URL..." />
     <button id="get-thumbnail">Get Thumbnail</button>
-
-    <div id="examples">
-      <p>Or try these trending videos:</p>
-      <div class="example-buttons">
-        <button data-url="https://www.youtube.com/watch?v=dQw4w9WgXcQ">Example 1</button>
-        <button data-url="https://www.youtube.com/watch?v=9bZkp7q19f0">Example 2</button>
-        <button data-url="https://www.youtube.com/watch?v=3JZ_D3ELwOQ">Example 3</button>
-      </div>
-    </div>
+    <p id="error-message" class="error hidden"></p>
 
     <div id="thumbnail-result" class="hidden">
       <img id="thumbnail-img" src="" alt="YouTube Thumbnail" />
       <div class="button-row">
         <button id="copy-link">📋 Copy Image Link</button>
-        <button id="show-qr">📱 Show QR</button>
       </div>
-      <canvas id="qr-code" class="hidden"></canvas>
     </div>
   </main>
 
   <footer>
-    Built by <a href="https://github.com/vxsaga">vxsaga</a> · No ads · 100% free
+    Built by <a href="https://github.com/vxsaga">vxsaga</a> · 100% Free · No ads
   </footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
   <script>
     const input = document.getElementById("youtube-url");
     const button = document.getElementById("get-thumbnail");
     const result = document.getElementById("thumbnail-result");
     const img = document.getElementById("thumbnail-img");
     const copyBtn = document.getElementById("copy-link");
+    const errorMsg = document.getElementById("error-message");
     const themeToggle = document.getElementById("theme-toggle");
-    const qrCanvas = document.getElementById("qr-code");
-    const showQR = document.getElementById("show-qr");
-    const exampleButtons = document.querySelectorAll(".example-buttons button");
 
-    // Load last search
-    window.addEventListener("DOMContentLoaded", () => {
-      const lastUrl = localStorage.getItem("lastYTUrl");
-      if (lastUrl) input.value = lastUrl;
-    });
-
-    // Extract video ID from URL
+    // Validate YouTube link and extract ID
     function extractYouTubeID(url) {
       const regex = /(?:youtu\.be\/|youtube\.com\/(?:watch\\?v=|embed\/|v\/))([\\w-]{11})/;
       const match = url.match(regex);
       return match ? match[1] : null;
     }
 
-    // Generate thumbnail
-    function loadThumbnail(url) {
-      const videoId = extractYouTubeID(url);
-      if (videoId) {
-        const thumbUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-        img.src = thumbUrl;
-        result.classList.remove("hidden");
-        qrCanvas.classList.add("hidden");
-        localStorage.setItem("lastYTUrl", url);
-      } else {
-        alert("Invalid YouTube URL");
+    // Try loading maxres, fallback if error
+    function loadThumbnail(id) {
+      const resolutions = ["maxresdefault", "hqdefault", "mqdefault"];
+      let current = 0;
+
+      function tryLoad() {
+        const src = `https://img.youtube.com/vi/${id}/${resolutions[current]}.jpg`;
+        img.src = src;
+        img.onload = () => {
+          result.classList.remove("hidden");
+          errorMsg.classList.add("hidden");
+        };
+        img.onerror = () => {
+          current++;
+          if (current < resolutions.length) {
+            tryLoad();
+          } else {
+            errorMsg.textContent = "Thumbnail not found. Try another video.";
+            errorMsg.classList.remove("hidden");
+            result.classList.add("hidden");
+          }
+        };
       }
+
+      tryLoad();
     }
 
     button.addEventListener("click", () => {
       const url = input.value.trim();
-      loadThumbnail(url);
+      const videoId = extractYouTubeID(url);
+      if (!videoId) {
+        errorMsg.textContent = "Invalid YouTube URL.";
+        errorMsg.classList.remove("hidden");
+        result.classList.add("hidden");
+        return;
+      }
+
+      loadThumbnail(videoId);
     });
 
     copyBtn.addEventListener("click", () => {
@@ -205,26 +197,9 @@
       });
     });
 
-    showQR.addEventListener("click", () => {
-      const qr = new QRious({
-        element: qrCanvas,
-        value: img.src,
-        size: 200,
-      });
-      qrCanvas.classList.remove("hidden");
-    });
-
     themeToggle.addEventListener("click", () => {
       document.body.classList.toggle("dark");
       themeToggle.textContent = document.body.classList.contains("dark") ? "☀️" : "🌙";
-    });
-
-    exampleButtons.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const url = btn.getAttribute("data-url");
-        input.value = url;
-        loadThumbnail(url);
-      });
     });
   </script>
 </body>
