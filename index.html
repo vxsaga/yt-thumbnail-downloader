@@ -31,6 +31,10 @@
       height: 28px;
       border-radius: 6px;
     }
+    h1 span {
+      font-size: 22px;
+      color: #fff;
+    }
     input, select, button {
       width: 100%;
       padding: 12px;
@@ -83,9 +87,9 @@
 
   <div class="container">
     <h1>
-      <img src="https://upload.wikimedia.org/wikipedia/commons/7/75/YouTube_social_white_square_%282017%29.png" 
-           alt="" aria-hidden="true">
-      <span style="font-size: 22px; color: #fff;">Thumbnail Downloader</span>
+      <img src="https://www.iconpacks.net/icons/2/free-youtube-logo-icon-2431-thumb.png" 
+           alt="YouTube Logo" aria-hidden="true">
+      <span>YouTube Thumbnail Downloader</span>
     </h1>
 
     <input type="text" id="youtube-url" placeholder="Paste YouTube Video URL..." />
@@ -148,7 +152,7 @@
     });
 
     function extractVideoID(url) {
-      const regExp = /(?:v=|\/)([0-9A-Za-z_-]{11})/;
+      const regExp = /(?:v=|\\/)([0-9A-Za-z_-]{11})/;
       const match = url.match(regExp);
       return match ? match[1] : null;
     }
