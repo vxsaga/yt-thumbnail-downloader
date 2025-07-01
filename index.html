@@ -4,64 +4,111 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>YouTube Thumbnail Downloader</title>
+  <link rel="icon" href="https://www.youtube.com/s/desktop/6bde7cdb/img/favicon_32x32.png">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
+    * { box-sizing: border-box; }
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background-color: #121212;
       color: #fff;
       padding: 20px;
+      margin: 0;
     }
-    input, button, select {
-      padding: 10px;
-      margin: 10px 0;
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    h1 {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-size: 24px;
+      margin-bottom: 20px;
+      color: #FF0000;
+    }
+    h1 img {
+      width: 30px;
+      height: 30px;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
       border-radius: 5px;
       border: none;
+      font-size: 16px;
     }
-    input {
-      width: 100%;
+    input, select {
+      background-color: #1e1e1e;
+      color: #fff;
     }
     button {
-      background-color: #1e88e5;
+      background-color: #e50914;
       color: white;
       cursor: pointer;
     }
-    .success {
-      color: lightgreen;
+    button:hover {
+      background-color: #c40611;
     }
-    .error {
-      color: red;
-    }
-    #analytics-output {
-      white-space: pre-wrap;
-      background: #1a1a1a;
-      padding: 10px;
+    #result img {
+      max-width: 100%;
       margin-top: 20px;
+      border-radius: 8px;
+    }
+    #recent-searches button {
+      background: #333;
+      color: #eee;
+      border: none;
+      margin: 4px 4px 0 0;
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    #copy-status {
+      color: lightgreen;
+      font-size: 14px;
+      margin-top: 8px;
+    }
+    canvas {
+      margin-top: 20px;
+    }
+    @media (max-width: 600px) {
+      h1 { font-size: 20px; }
     }
   </style>
 </head>
 <body>
 
-  <h1>YouTube Thumbnail Downloader</h1>
+  <div class="container">
+    <h1>
+      <img src="https://www.youtube.com/s/desktop/6bde7cdb/img/favicon_32x32.png" alt="YouTube Logo">
+      YouTube Thumbnail Downloader
+    </h1>
 
-  <input type="text" id="youtube-url" placeholder="Enter YouTube Video URL" />
-  
-  <select id="quality">
-    <option value="maxresdefault">Max Resolution</option>
-    <option value="hqdefault">High Quality</option>
-    <option value="mqdefault">Medium Quality</option>
-    <option value="sddefault">Standard Definition</option>
-  </select>
-  
-  <button id="download-btn">Get Thumbnail</button>
+    <input type="text" id="youtube-url" placeholder="Paste YouTube Video URL..." />
+    <div id="recent-searches"></div>
 
-  <!-- Hidden Admin Controls -->
-  <div id="admin-controls" style="display:none;">
-    <button id="view-analytics">View Analytics</button>
-    <pre id="analytics-output"></pre>
+    <select id="quality">
+      <option value="maxresdefault">Max Resolution</option>
+      <option value="hqdefault">High Quality</option>
+      <option value="mqdefault">Medium Quality</option>
+      <option value="sddefault">Standard Definition</option>
+    </select>
+
+    <button id="download-btn">Get Thumbnail</button>
+
+    <p id="success-msg"></p>
+    <div id="result"></div>
+
+    <div id="admin-controls" style="display:none;">
+      <button id="view-analytics">View Analytics (JSON)</button>
+      <pre id="analytics-output"></pre>
+      <canvas id="analytics-chart" width="400" height="200"></canvas>
+    </div>
   </div>
-
-  <p id="success-msg"></p>
-  <div id="result"></div>
 
   <script>
     const downloadBtn = document.getElementById("download-btn");
@@ -77,36 +124,41 @@
         const thumbnailURL = `https://img.youtube.com/vi/${videoId}/${quality}.jpg`;
         resultDiv.innerHTML = `
           <img src="${thumbnailURL}" alt="Thumbnail"/>
-          <br/><a href="${thumbnailURL}" download>Download Thumbnail</a>
+          <a href="${thumbnailURL}" download>Download Thumbnail</a>
+          <p id="copy-status"></p>
+          <button onclick="copyShareableLink()">🔗 Copy Shareable Link</button>
         `;
         successMsg.textContent = "✅ Thumbnail loaded successfully!";
-        trackDownload(videoId); // Track analytics
+        trackDownload(videoId);
+        saveSearch(url);
+
+        navigator.clipboard.writeText(thumbnailURL)
+          .then(() => {
+            document.getElementById("copy-status").textContent = "🔗 Thumbnail link copied to clipboard!";
+            setTimeout(() => document.getElementById("copy-status").textContent = "", 3000);
+          })
+          .catch(() => {
+            document.getElementById("copy-status").textContent = "❌ Failed to copy thumbnail link.";
+          });
       } else {
         resultDiv.innerHTML = '';
         successMsg.textContent = '';
-        resultDiv.innerHTML = `<p class="error">❌ Invalid YouTube URL. Please try again.</p>`;
+        resultDiv.innerHTML = `<p style="color:red;">❌ Invalid YouTube URL. Please try again.</p>`;
       }
     });
 
-    // Extract video ID from YouTube URL
     function extractVideoID(url) {
       const regExp = /(?:v=|\/)([0-9A-Za-z_-]{11})/;
       const match = url.match(regExp);
       return match ? match[1] : null;
     }
 
-    // === Analytics Tracking ===
     function trackDownload(videoId) {
       const analytics = JSON.parse(localStorage.getItem("analytics") || "{}");
       const date = new Date().toLocaleDateString();
-
-      if (!analytics[videoId]) {
-        analytics[videoId] = { count: 0, lastUsed: null };
-      }
-
+      if (!analytics[videoId]) analytics[videoId] = { count: 0, lastUsed: null };
       analytics[videoId].count += 1;
       analytics[videoId].lastUsed = date;
-
       localStorage.setItem("analytics", JSON.stringify(analytics));
     }
 
@@ -114,13 +166,81 @@
       return JSON.parse(localStorage.getItem("analytics") || "{}");
     }
 
-    // === Admin Access Check ===
+    function saveSearch(url) {
+      let history = JSON.parse(localStorage.getItem("recentSearches") || "[]");
+      history = history.filter(item => item !== url);
+      history.unshift(url);
+      if (history.length > 5) history = history.slice(0, 5);
+      localStorage.setItem("recentSearches", JSON.stringify(history));
+      renderSearchHistory();
+    }
+
+    function renderSearchHistory() {
+      const history = JSON.parse(localStorage.getItem("recentSearches") || "[]");
+      const container = document.getElementById("recent-searches");
+      if (history.length === 0) return container.innerHTML = '';
+      container.innerHTML = `<p style="margin:5px 0;">🔁 Recent Searches:</p>` +
+        history.map(url => `<button onclick="fillURL('${url}')">${url}</button>`).join('');
+    }
+
+    function fillURL(url) {
+      document.getElementById("youtube-url").value = url;
+    }
+
+    function copyShareableLink() {
+      const inputURL = document.getElementById("youtube-url").value;
+      const fullLink = `${location.origin}${location.pathname}?url=${encodeURIComponent(inputURL)}`;
+      navigator.clipboard.writeText(fullLink)
+        .then(() => {
+          document.getElementById("copy-status").textContent = "🔗 Shareable link copied!";
+          setTimeout(() => document.getElementById("copy-status").textContent = "", 3000);
+        })
+        .catch(() => {
+          document.getElementById("copy-status").textContent = "❌ Failed to copy share link.";
+        });
+    }
+
     const isAdmin = new URLSearchParams(window.location.search).get("admin") === "true";
     if (isAdmin) {
       document.getElementById("admin-controls").style.display = "block";
       document.getElementById("view-analytics").addEventListener("click", () => {
         const data = getAnalytics();
         document.getElementById("analytics-output").textContent = JSON.stringify(data, null, 2);
+        renderChart(data);
+      });
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      const query = new URLSearchParams(window.location.search);
+      const presetURL = query.get("url");
+      if (presetURL) {
+        document.getElementById("youtube-url").value = presetURL;
+        document.getElementById("download-btn").click();
+      }
+      renderSearchHistory();
+    });
+
+    function renderChart(data) {
+      const ctx = document.getElementById('analytics-chart').getContext('2d');
+      const labels = Object.keys(data);
+      const counts = labels.map(id => data[id].count);
+
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Download Count',
+            data: counts,
+            backgroundColor: '#ff0000',
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
       });
     }
   </script>
