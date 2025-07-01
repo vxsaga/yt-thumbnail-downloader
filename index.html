@@ -42,6 +42,7 @@
       border-radius: 5px;
       border: none;
       font-size: 16px;
+      box-sizing: border-box;
     }
     input, select {
       background-color: #1e1e1e;
@@ -51,14 +52,26 @@
       background-color: #e50914;
       color: white;
       cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
     }
     button:hover {
       background-color: #c40611;
+      transform: scale(1.05);
     }
     #result img {
       max-width: 100%;
       margin-top: 20px;
       border-radius: 8px;
+    }
+    #result a {
+      display: inline-block;
+      margin-top: 10px;
+      color: #ff0000;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    #result a:hover {
+      text-decoration: underline;
     }
     #recent-searches button {
       background: #333;
@@ -69,14 +82,22 @@
       border-radius: 4px;
       font-size: 14px;
       cursor: pointer;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
     }
     #copy-status {
       color: lightgreen;
       font-size: 14px;
       margin-top: 8px;
+      min-height: 20px;
     }
     canvas {
       margin-top: 20px;
+      background-color: #222;
+      border-radius: 8px;
+      padding: 10px;
     }
     @media (max-width: 600px) {
       h1 { font-size: 20px; }
@@ -87,27 +108,27 @@
 
   <div class="container">
     <h1>
-      <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg" alt="YouTube Logo" style="height: 28px;">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg" alt="YouTube Logo" />
       <span>YouTube Thumbnail Downloader</span>
     </h1>
 
-    <input type="text" id="youtube-url" placeholder="Paste YouTube Video URL..." />
+    <input type="text" id="youtube-url" placeholder="Paste YouTube Video URL..." autocomplete="off" />
     <div id="recent-searches"></div>
 
-    <select id="quality">
+    <select id="quality" aria-label="Select thumbnail quality">
       <option value="maxresdefault">Max Resolution</option>
       <option value="hqdefault">High Quality</option>
       <option value="mqdefault">Medium Quality</option>
       <option value="sddefault">Standard Definition</option>
     </select>
 
-    <button id="download-btn">Get Thumbnail</button>
+    <button id="download-btn" type="button">Get Thumbnail</button>
 
-    <p id="success-msg"></p>
+    <p id="success-msg" role="alert" aria-live="polite"></p>
     <div id="result"></div>
 
     <div id="admin-controls" style="display:none;">
-      <button id="view-analytics">View Analytics (JSON)</button>
+      <button id="view-analytics" type="button">View Analytics (JSON)</button>
       <pre id="analytics-output"></pre>
       <canvas id="analytics-chart" width="400" height="200"></canvas>
     </div>
@@ -118,42 +139,20 @@
     const resultDiv = document.getElementById("result");
     const successMsg = document.getElementById("success-msg");
 
-    downloadBtn.addEventListener("click", () => {
-      const url = document.getElementById("youtube-url").value;
-      const quality = document.getElementById("quality").value;
-      const videoId = extractVideoID(url);
-
-      if (videoId) {
-        const thumbnailURL = `https://img.youtube.com/vi/${videoId}/${quality}.jpg`;
-        resultDiv.innerHTML = `
-          <img src="${thumbnailURL}" alt="Thumbnail"/>
-          <a href="${thumbnailURL}" download>Download Thumbnail</a>
-          <p id="copy-status"></p>
-          <button onclick="copyShareableLink()">🔗 Copy Shareable Link</button>
-        `;
-        successMsg.textContent = "✅ Thumbnail loaded successfully!";
-        trackDownload(videoId);
-        saveSearch(url);
-
-        navigator.clipboard.writeText(thumbnailURL)
-          .then(() => {
-            document.getElementById("copy-status").textContent = "🔗 Thumbnail link copied to clipboard!";
-            setTimeout(() => document.getElementById("copy-status").textContent = "", 3000);
-          })
-          .catch(() => {
-            document.getElementById("copy-status").textContent = "❌ Failed to copy thumbnail link.";
-          });
-      } else {
-        resultDiv.innerHTML = '';
-        successMsg.textContent = '';
-        resultDiv.innerHTML = `<p style="color:red;">❌ Invalid YouTube URL. Please try again.</p>`;
-      }
-    });
-
+    // Improved regex to extract video ID from various YouTube URL formats
     function extractVideoID(url) {
-      const regExp = /(?:v=|\\/)([0-9A-Za-z_-]{11})/;
-      const match = url.match(regExp);
-      return match ? match[1] : null;
+      if (!url) return null;
+      const patterns = [
+        /(?:https?:\/\/)?(?:www\.)?youtu\.be\/([0-9A-Za-z_-]{11})/, // youtu.be/ID
+        /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([0-9A-Za-z_-]{11})/, // youtube.com/watch?v=ID
+        /(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([0-9A-Za-z_-]{11})/, // youtube.com/embed/ID
+        /(?:https?:\/\/)?(?:www\.)?youtube\.com\/v\/([0-9A-Za-z_-]{11})/, // youtube.com/v/ID
+      ];
+      for (const pattern of patterns) {
+        const match = url.match(pattern);
+        if (match && match[1]) return match[1];
+      }
+      return null;
     }
 
     function trackDownload(videoId) {
@@ -181,9 +180,12 @@
     function renderSearchHistory() {
       const history = JSON.parse(localStorage.getItem("recentSearches") || "[]");
       const container = document.getElementById("recent-searches");
-      if (history.length === 0) return container.innerHTML = '';
+      if (history.length === 0) {
+        container.innerHTML = '';
+        return;
+      }
       container.innerHTML = `<p style="margin:5px 0;">🔁 Recent Searches:</p>` +
-        history.map(url => `<button onclick="fillURL('${url}')">${url}</button>`).join('');
+        history.map(url => `<button type="button" onclick="fillURL('${url.replace(/'/g, "\\'")}')">${url}</button>`).join('');
     }
 
     function fillURL(url) {
@@ -192,6 +194,7 @@
 
     function copyShareableLink() {
       const inputURL = document.getElementById("youtube-url").value;
+      if (!inputURL) return;
       const fullLink = `${location.origin}${location.pathname}?url=${encodeURIComponent(inputURL)}`;
       navigator.clipboard.writeText(fullLink)
         .then(() => {
@@ -202,6 +205,38 @@
           document.getElementById("copy-status").textContent = "❌ Failed to copy share link.";
         });
     }
+
+    downloadBtn.addEventListener("click", () => {
+      const url = document.getElementById("youtube-url").value.trim();
+      const quality = document.getElementById("quality").value;
+      const videoId = extractVideoID(url);
+
+      if (videoId) {
+        const thumbnailURL = `https://img.youtube.com/vi/${videoId}/${quality}.jpg`;
+        resultDiv.innerHTML = `
+          <img src="${thumbnailURL}" alt="Thumbnail"/>
+          <a href="${thumbnailURL}" download="youtube-thumbnail.jpg" target="_blank" rel="noopener noreferrer">Download Thumbnail</a>
+          <p id="copy-status"></p>
+          <button type="button" onclick="copyShareableLink()">🔗 Copy Shareable Link</button>
+        `;
+        successMsg.textContent = "✅ Thumbnail loaded successfully!";
+        trackDownload(videoId);
+        saveSearch(url);
+
+        navigator.clipboard.writeText(thumbnailURL)
+          .then(() => {
+            document.getElementById("copy-status").textContent = "🔗 Thumbnail link copied to clipboard!";
+            setTimeout(() => document.getElementById("copy-status").textContent = "", 3000);
+          })
+          .catch(() => {
+            document.getElementById("copy-status").textContent = "❌ Failed to copy thumbnail link.";
+          });
+      } else {
+        resultDiv.innerHTML = '';
+        successMsg.textContent = '';
+        resultDiv.innerHTML = `<p style="color:red;">❌ Invalid YouTube URL. Please try again.</p>`;
+      }
+    });
 
     const isAdmin = new URLSearchParams(window.location.search).get("admin") === "true";
     if (isAdmin) {
@@ -218,7 +253,7 @@
       const presetURL = query.get("url");
       if (presetURL) {
         document.getElementById("youtube-url").value = presetURL;
-        document.getElementById("download-btn").click();
+        downloadBtn.click();
       }
       renderSearchHistory();
     });
@@ -228,7 +263,12 @@
       const labels = Object.keys(data);
       const counts = labels.map(id => data[id].count);
 
-      new Chart(ctx, {
+      // Destroy existing chart instance if any to avoid overlay bugs
+      if (window.analyticsChart) {
+        window.analyticsChart.destroy();
+      }
+
+      window.analyticsChart = new Chart(ctx, {
         type: 'bar',
         data: {
           labels: labels,
