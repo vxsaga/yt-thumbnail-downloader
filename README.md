@@ -1,2 +1,2 @@
-# yt-thumbnail-downloader
-YouTube Thumbnail Downloader Tool
+# yt-BMI-Calculator
+BMI Calculator Advanced
