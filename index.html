@@ -8,6 +8,35 @@
 <body>
   <h1>YouTube Thumbnail Downloader</h1>
   <p>Enter the YouTube video URL to download its thumbnail.</p>
-  <!-- Add your form and functionality here -->
+
+  <form id="thumbnailForm">
+    <input type="text" id="youtubeURL" placeholder="Enter YouTube Video URL" required />
+    <button type="submit">Get Thumbnail</button>
+  </form>
+
+  <div id="thumbnailResult" style="margin-top: 20px;"></div>
+
+  <script>
+    document.getElementById('thumbnailForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const url = document.getElementById('youtubeURL').value;
+      const videoId = extractVideoID(url);
+      if (videoId) {
+        const thumbnailURL = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+        document.getElementById('thumbnailResult').innerHTML = `
+          <img src="${thumbnailURL}" alt="Thumbnail" width="480"/>
+          <br/><a href="${thumbnailURL}" download>Download Thumbnail</a>
+        `;
+      } else {
+        document.getElementById('thumbnailResult').innerHTML = `<p style="color:red;">Invalid YouTube URL.</p>`;
+      }
+    });
+
+    function extractVideoID(url) {
+      const regExp = /(?:v=|\/)([0-9A-Za-z_-]{11})/;
+      const match = url.match(regExp);
+      return match ? match[1] : null;
+    }
+  </script>
 </body>
 </html>
