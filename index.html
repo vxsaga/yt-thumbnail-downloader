@@ -2,205 +2,169 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>YouTube Thumbnail Downloader</title>
-  <link rel="icon" href="https://www.youtube.com/s/desktop/6e4b2f4e/img/favicon_144.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BMI & Health Checker</title>
   <style>
-    :root {
-      --bg: #f4f4f4;
-      --text: #222;
-      --card: #fff;
-      --accent: #ff0000;
-    }
-    .dark {
-      --bg: #121212;
-      --text: #eee;
-      --card: #1e1e1e;
-    }
     body {
-      margin: 0;
+      background: #f4f4f4;
+      color: #222;
       font-family: Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      transition: 0.3s;
+      margin: 0;
+      padding: 0;
     }
     header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: var(--card);
       padding: 1rem;
+      background: #fff;
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-    header img {
-      height: 32px;
+      text-align: center;
     }
     header h1 {
-      font-size: 1.2rem;
       margin: 0;
-    }
-    #theme-toggle {
-      background: transparent;
-      border: none;
-      font-size: 1.2rem;
-      cursor: pointer;
+      font-size: 1.4rem;
     }
     main {
       padding: 2rem 1rem;
-      text-align: center;
+      max-width: 600px;
+      margin: auto;
     }
-    .subheading {
-      font-size: 1rem;
-      margin-bottom: 1rem;
-    }
-    input[type="text"] {
-      width: 90%;
-      max-width: 400px;
+    input {
+      width: 100%;
       padding: 10px;
-      font-size: 1rem;
-      border-radius: 8px;
+      margin-top: 8px;
+      margin-bottom: 16px;
       border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
     }
     button {
-      margin-top: 1rem;
       padding: 10px 20px;
-      background: var(--accent);
-      color: #fff;
+      font-size: 1rem;
       border: none;
       border-radius: 8px;
-      font-size: 1rem;
+      background: #007bff;
+      color: #fff;
       cursor: pointer;
-      transition: 0.2s ease;
     }
-    button:hover {
-      opacity: 0.9;
-    }
-    #thumbnail-result {
-      margin-top: 2rem;
-    }
-    #thumbnail-result img {
-      max-width: 100%;
-      height: auto;
+    .card {
+      background: #fff;
+      padding: 1rem;
       border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    }
-    .button-row {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-      margin-top: 10px;
-    }
-    #qr-code {
       margin-top: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
     .hidden {
       display: none;
     }
-    .error {
-      color: red;
-      margin-top: 1rem;
+    label {
+      font-weight: bold;
+    }
+    .checkbox-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 10px 0;
+    }
+    .checkbox-group label {
+      font-weight: normal;
     }
     footer {
       text-align: center;
-      font-size: 0.9rem;
       padding: 1rem;
-      background: var(--card);
-      color: var(--text);
+      font-size: 0.9rem;
+      background: #fff;
+      margin-top: 2rem;
     }
   </style>
 </head>
 <body>
   <header>
-    <img src="https://www.youtube.com/s/desktop/6e4b2f4e/img/favicon_144.png" alt="YouTube" />
-    <h1>YouTube Thumbnail Downloader</h1>
-    <button id="theme-toggle">🌙</button>
+    <h1>BMI & Lifestyle Health Checker</h1>
   </header>
-
   <main>
-    <p class="subheading">Paste a YouTube video link below to get the thumbnail</p>
-    <input type="text" id="youtube-url" placeholder="Paste YouTube URL..." />
-    <button id="get-thumbnail">Get Thumbnail</button>
-    <p id="error-message" class="error hidden"></p>
+    <label>Height (in cm)</label>
+    <input type="number" id="height" placeholder="e.g. 170" />
 
-    <div id="thumbnail-result" class="hidden">
-      <img id="thumbnail-img" src="" alt="YouTube Thumbnail" />
-      <div class="button-row">
-        <button id="copy-link">📋 Copy Image Link</button>
+    <label>Weight (in kg)</label>
+    <input type="number" id="weight" placeholder="e.g. 70" />
+
+    <button onclick="calculateBMI()">Calculate BMI</button>
+
+    <div id="bmi-result" class="card hidden"></div>
+    <div id="test-suggestions" class="card hidden"></div>
+    <div id="disease-check" class="card hidden">
+      <p>Do you have any of the following lifestyle diseases?</p>
+      <div class="checkbox-group">
+        <label><input type="checkbox" value="Diabetes" /> Diabetes</label>
+        <label><input type="checkbox" value="Hypertension" /> Hypertension</label>
+        <label><input type="checkbox" value="Fatty Liver" /> Fatty Liver</label>
+        <label><input type="checkbox" value="Thyroid" /> Thyroid</label>
       </div>
+      <p>Are you able to manage them well?</p>
+      <button onclick="showRecommendations()">I Need Help</button>
     </div>
+
+    <div id="recommendations" class="card hidden"></div>
   </main>
 
   <footer>
-    Built by <a href="https://github.com/vxsaga">vxsaga</a> · 100% Free · No ads
+    Built by <a href="https://github.com/vxsaga">vxsaga</a> · 100% Free Health Tool
   </footer>
 
   <script>
-    const input = document.getElementById("youtube-url");
-    const button = document.getElementById("get-thumbnail");
-    const result = document.getElementById("thumbnail-result");
-    const img = document.getElementById("thumbnail-img");
-    const copyBtn = document.getElementById("copy-link");
-    const errorMsg = document.getElementById("error-message");
-    const themeToggle = document.getElementById("theme-toggle");
+    const resultBox = document.getElementById("bmi-result");
+    const testBox = document.getElementById("test-suggestions");
+    const diseaseCheck = document.getElementById("disease-check");
+    const recBox = document.getElementById("recommendations");
 
-    // Validate YouTube link and extract ID
-    function extractYouTubeID(url) {
-      const regex = /(?:youtu\.be\/|youtube\.com\/(?:watch\\?v=|embed\/|v\/))([\\w-]{11})/;
-      const match = url.match(regex);
-      return match ? match[1] : null;
-    }
-
-    // Try loading maxres, fallback if error
-    function loadThumbnail(id) {
-      const resolutions = ["maxresdefault", "hqdefault", "mqdefault"];
-      let current = 0;
-
-      function tryLoad() {
-        const src = `https://img.youtube.com/vi/${id}/${resolutions[current]}.jpg`;
-        img.src = src;
-        img.onload = () => {
-          result.classList.remove("hidden");
-          errorMsg.classList.add("hidden");
-        };
-        img.onerror = () => {
-          current++;
-          if (current < resolutions.length) {
-            tryLoad();
-          } else {
-            errorMsg.textContent = "Thumbnail not found. Try another video.";
-            errorMsg.classList.remove("hidden");
-            result.classList.add("hidden");
-          }
-        };
-      }
-
-      tryLoad();
-    }
-
-    button.addEventListener("click", () => {
-      const url = input.value.trim();
-      const videoId = extractYouTubeID(url);
-      if (!videoId) {
-        errorMsg.textContent = "Invalid YouTube URL.";
-        errorMsg.classList.remove("hidden");
-        result.classList.add("hidden");
+    function calculateBMI() {
+      const h = parseFloat(document.getElementById("height").value);
+      const w = parseFloat(document.getElementById("weight").value);
+      if (!h || !w) {
+        alert("Please enter valid height and weight");
         return;
       }
+      const heightInM = h / 100;
+      const bmi = (w / (heightInM * heightInM)).toFixed(1);
+      let category = "";
+      if (bmi < 18.5) category = "Underweight";
+      else if (bmi < 24.9) category = "Normal";
+      else if (bmi < 29.9) category = "Overweight";
+      else category = "Obese";
 
-      loadThumbnail(videoId);
-    });
+      resultBox.classList.remove("hidden");
+      resultBox.innerHTML = `<h3>Your BMI is ${bmi}</h3><p>Category: <strong>${category}</strong></p>`;
 
-    copyBtn.addEventListener("click", () => {
-      navigator.clipboard.writeText(img.src).then(() => {
-        copyBtn.innerText = "✅ Copied!";
-        setTimeout(() => (copyBtn.innerText = "📋 Copy Image Link"), 2000);
-      });
-    });
+      if (bmi > 24.9) {
+        testBox.classList.remove("hidden");
+        testBox.innerHTML = `
+          <h4>Recommended Health Checkups:</h4>
+          <ul>
+            <li>Fasting Blood Sugar</li>
+            <li>HbA1c</li>
+            <li>Lipid Profile</li>
+            <li>Liver Function Test (LFT)</li>
+            <li>Thyroid Function Test</li>
+          </ul>`;
+        diseaseCheck.classList.remove("hidden");
+      } else {
+        testBox.classList.add("hidden");
+        diseaseCheck.classList.add("hidden");
+        recBox.classList.add("hidden");
+      }
+    }
 
-    themeToggle.addEventListener("click", () => {
-      document.body.classList.toggle("dark");
-      themeToggle.textContent = document.body.classList.contains("dark") ? "☀️" : "🌙";
-    });
+    function showRecommendations() {
+      recBox.classList.remove("hidden");
+      recBox.innerHTML = `
+        <h4>Recommended Lifestyle Modifications:</h4>
+        <ul>
+          <li>Eat more fiber-rich vegetables & whole grains</li>
+          <li>Avoid processed sugar and refined carbs</li>
+          <li>Walk at least 30 minutes daily</li>
+          <li>Reduce screen time and improve sleep hygiene</li>
+          <li>Practice stress-reduction: yoga, meditation, journaling</li>
+        </ul>`;
+    }
   </script>
 </body>
 </html>
