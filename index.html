@@ -178,6 +178,44 @@
         <br><a href="${downloadShortURL}" target="_blank" class="video-download-link">⬇️ Download Shorts Video</a>
       `;
     });
+
+    function extractVideoID(url) {
+      const regExp = /(?:youtube\.com\/(?:watch\?v=|embed\/|v\/)|youtu\.be\/)([\w-]{11})/;
+      const match = url.match(regExp);
+      return match ? match[1] : null;
+    }
+
+    function extractShortsID(url) {
+      const regExp = /(?:youtube\.com\/shorts\/)([\w-]{11})/;
+      const match = url.match(regExp);
+      return match ? match[1] : null;
+    }
+
+    function saveSearch(url) {
+      let history = JSON.parse(localStorage.getItem("recentSearches") || "[]");
+      if (!history.includes(url)) {
+        history.unshift(url);
+        if (history.length > 5) history = history.slice(0, 5);
+        localStorage.setItem("recentSearches", JSON.stringify(history));
+      }
+    }
+
+    function trackDownload(videoId) {
+      const analytics = JSON.parse(localStorage.getItem("analytics") || "{}");
+      if (!analytics[videoId]) analytics[videoId] = { count: 0, lastUsed: "" };
+      analytics[videoId].count += 1;
+      analytics[videoId].lastUsed = new Date().toISOString().split("T")[0];
+      localStorage.setItem("analytics", JSON.stringify(analytics));
+    }
+
+    function copyShareableLink(url) {
+      const fullLink = `${location.origin}${location.pathname}?url=${encodeURIComponent(url)}`;
+      navigator.clipboard.writeText(fullLink)
+        .then(() => {
+          document.getElementById("copy-status").textContent = "🔗 Link copied!";
+          setTimeout(() => document.getElementById("copy-status").textContent = "", 3000);
+        });
+    }
   </script>
 </body>
 </html>
