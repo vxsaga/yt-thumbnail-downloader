@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>YouTube Thumbnail Downloader</title>
+  <title>YouTube Thumbnail & Shorts Downloader</title>
   <link
     href="https://fonts.googleapis.com/css2?family=Poppins&display=swap"
     rel="stylesheet"
@@ -107,19 +107,19 @@
     }
 
     /* Result */
-    #result {
+    #result, #shorts-result {
       margin-top: 30px;
       max-width: 540px;
       width: 100%;
       text-align: center;
     }
-    #result img {
+    #result img, #shorts-result img {
       width: 100%;
       border-radius: 10px;
       box-shadow: 0 0 15px rgba(255, 0, 0, 0.6);
       user-select: none;
     }
-    #download-link {
+    #download-link, #shorts-download-link {
       display: inline-block;
       margin-top: 16px;
       background-color: #e50914;
@@ -132,7 +132,7 @@
       transition: background-color 0.3s ease;
       user-select: none;
     }
-    #download-link:hover {
+    #download-link:hover, #shorts-download-link:hover {
       background-color: #bf0811;
     }
 
@@ -187,17 +187,17 @@
     }
 
     /* Success/error messages */
-    #message {
+    #message, #shorts-message {
       margin-top: 18px;
       font-weight: 600;
       font-size: 16px;
       min-height: 24px;
       user-select: none;
     }
-    #message.error {
+    #message.error, #shorts-message.error {
       color: #f44336;
     }
-    #message.success {
+    #message.success, #shorts-message.success {
       color: #4caf50;
     }
 
@@ -244,6 +244,19 @@
       margin: 0 auto 40px;
     }
 
+    /* Section titles */
+    .section-title {
+      font-weight: 700;
+      font-size: 22px;
+      margin-top: 60px;
+      margin-bottom: 24px;
+      border-bottom: 2px solid #e50914;
+      padding-bottom: 8px;
+      max-width: 540px;
+      width: 100%;
+      user-select: none;
+    }
+
     @media (max-width: 600px) {
       header h1 {
         font-size: 22px;
@@ -259,13 +272,17 @@
         font-size: 16px;
         padding: 0 20px;
       }
-      #download-link {
+      #download-link, #shorts-download-link {
         padding: 12px 20px;
         font-size: 16px;
       }
       #copy-share-btn {
         padding: 8px 20px;
         font-size: 14px;
+      }
+      .section-title {
+        font-size: 18px;
+        margin-top: 40px;
       }
     }
   </style>
@@ -277,34 +294,55 @@
       alt="YouTube Logo"
       draggable="false"
     />
-    <h1>YouTube Thumbnail Downloader</h1>
+    <h1>YouTube Thumbnail & Shorts Downloader</h1>
   </header>
 
-  <div class="input-container">
-    <input
-      type="text"
-      id="youtube-url"
-      placeholder="Paste YouTube Video URL..."
-      autocomplete="off"
-    />
-    <select id="quality" title="Select Thumbnail Quality">
-      <option value="maxresdefault">Max Resolution</option>
-      <option value="hqdefault">High Quality</option>
-      <option value="mqdefault">Medium Quality</option>
-      <option value="sddefault">Standard Definition</option>
-    </select>
-    <button id="download-btn">Get Thumbnail</button>
-  </div>
+  <!-- Thumbnail Downloader Section -->
+  <section aria-labelledby="thumbnail-section-title">
+    <h2 id="thumbnail-section-title" class="section-title">YouTube Thumbnail Downloader</h2>
+    <div class="input-container">
+      <input
+        type="text"
+        id="youtube-url"
+        placeholder="Paste YouTube Video URL..."
+        autocomplete="off"
+        aria-label="YouTube Video URL"
+      />
+      <select id="quality" title="Select Thumbnail Quality" aria-label="Thumbnail Quality">
+        <option value="maxresdefault">Max Resolution</option>
+        <option value="hqdefault">High Quality</option>
+        <option value="mqdefault">Medium Quality</option>
+        <option value="sddefault">Standard Definition</option>
+      </select>
+      <button id="download-btn">Get Thumbnail</button>
+    </div>
 
-  <div id="message" aria-live="polite"></div>
+    <div id="message" aria-live="polite"></div>
+    <div id="result" aria-live="polite"></div>
+    <button id="copy-share-btn" style="display:none;">🔗 Copy Shareable Link</button>
+    <div id="copy-status"></div>
+    <div id="recent-searches"></div>
+  </section>
 
-  <div id="result"></div>
+  <!-- Shorts Downloader Section -->
+  <section aria-labelledby="shorts-section-title">
+    <h2 id="shorts-section-title" class="section-title">YouTube Shorts Downloader</h2>
+    <div class="input-container">
+      <input
+        type="text"
+        id="shorts-url"
+        placeholder="Paste YouTube Shorts URL (e.g. https://youtube.com/shorts/VIDEOID)"
+        autocomplete="off"
+        aria-label="YouTube Shorts URL"
+      />
+      <button id="shorts-download-btn">Get Shorts Video</button>
+    </div>
 
-  <button id="copy-share-btn" style="display:none;">🔗 Copy Shareable Link</button>
-  <div id="copy-status"></div>
+    <div id="shorts-message" aria-live="polite"></div>
+    <div id="shorts-result" aria-live="polite"></div>
+  </section>
 
-  <div id="recent-searches"></div>
-
+  <!-- Admin Analytics Section -->
   <div id="admin-controls" style="display:none;">
     <button id="view-analytics">View Analytics (JSON)</button>
     <pre id="analytics-output"></pre>
@@ -312,7 +350,7 @@
   </div>
 
   <script>
-    // Elements
+    // Elements for Thumbnail Downloader
     const inputURL = document.getElementById('youtube-url');
     const qualitySelect = document.getElementById('quality');
     const downloadBtn = document.getElementById('download-btn');
@@ -322,13 +360,19 @@
     const copyStatus = document.getElementById('copy-status');
     const recentSearchesDiv = document.getElementById('recent-searches');
 
+    // Elements for Shorts Downloader
+    const shortsInput = document.getElementById('shorts-url');
+    const shortsBtn = document.getElementById('shorts-download-btn');
+    const shortsResultDiv = document.getElementById('shorts-result');
+    const shortsMessageDiv = document.getElementById('shorts-message');
+
     // Admin elements
     const adminControls = document.getElementById('admin-controls');
     const viewAnalyticsBtn = document.getElementById('view-analytics');
     const analyticsOutput = document.getElementById('analytics-output');
     const analyticsChartCanvas = document.getElementById('analytics-chart');
 
-    // Extract video ID robustly
+    // Extract video ID robustly for thumbnails (normal YouTube URLs)
     function extractVideoID(url) {
       if (!url) return null;
       const patterns = [
@@ -345,17 +389,22 @@
       return null;
     }
 
-    // Load recent searches from localStorage
+    // Extract Shorts video ID specifically from shorts URLs
+    function extractShortsID(url) {
+      if (!url) return null;
+      const shortsPattern = /(?:https?:\/\/)?(?:www\.)?youtube\.com\/shorts\/([0-9A-Za-z_-]{11})/;
+      const match = url.match(shortsPattern);
+      return match ? match[1] : null;
+    }
+
+    // Load and save recent searches (for thumbnails)
     function loadRecentSearches() {
       const searches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
       return searches;
     }
-    // Save recent searches to localStorage
     function saveRecentSearches(searches) {
       localStorage.setItem('recentSearches', JSON.stringify(searches));
     }
-
-    // Render recent searches buttons
     function renderRecentSearches() {
       const searches = loadRecentSearches();
       if (searches.length === 0) {
@@ -371,8 +420,6 @@
           )
           .join('');
     }
-
-    // Fill input with recent search URL
     function fillURL(url) {
       inputURL.value = url;
       messageDiv.textContent = '';
@@ -380,9 +427,9 @@
       copyShareBtn.style.display = 'none';
       copyStatus.textContent = '';
     }
-    window.fillURL = fillURL; // expose globally for button onclick
+    window.fillURL = fillURL; // expose globally for recent search buttons
 
-    // Save search if not duplicate & limit max 5
+    // Add to recent searches (max 5)
     function addToRecentSearches(url) {
       if (!url) return;
       let searches = loadRecentSearches();
@@ -393,7 +440,7 @@
       renderRecentSearches();
     }
 
-    // Analytics: store download count & last used date per videoId
+    // Analytics: track downloads per videoId
     function trackDownload(videoId) {
       if (!videoId) return;
       const analytics = JSON.parse(localStorage.getItem('analytics') || '{}');
@@ -403,12 +450,9 @@
       analytics[videoId].lastUsed = date;
       localStorage.setItem('analytics', JSON.stringify(analytics));
     }
-
     function getAnalytics() {
       return JSON.parse(localStorage.getItem('analytics') || '{}');
     }
-
-    // Render chart for analytics
     function renderChart(data) {
       if (!analyticsChartCanvas) return;
       const ctx = analyticsChartCanvas.getContext('2d');
@@ -438,7 +482,7 @@
       });
     }
 
-    // Copy shareable link to clipboard
+    // Copy shareable link for thumbnails
     copyShareBtn.addEventListener('click', () => {
       const inputVal = inputURL.value.trim();
       if (!inputVal) return;
@@ -455,7 +499,7 @@
         });
     });
 
-    // Main download button click handler
+    // Thumbnail downloader button click
     downloadBtn.addEventListener('click', () => {
       const url = inputURL.value.trim();
       const quality = qualitySelect.value;
@@ -469,53 +513,4 @@
         messageDiv.textContent = '❌ Invalid YouTube URL. Please try again.';
         messageDiv.className = 'error';
         return;
-      }
-
-      const thumbnailURL = `https://img.youtube.com/vi/${videoId}/${quality}.jpg`;
-
-      // Preload the image to check if it exists
-      const img = new Image();
-      img.onload = () => {
-        resultDiv.innerHTML = `
-          <img src="${thumbnailURL}" alt="YouTube Thumbnail Preview" draggable="false"/>
-          <a id="download-link" href="${thumbnailURL}" target="_blank" download="youtube-thumbnail.jpg">Download Thumbnail</a>
-        `;
-        messageDiv.textContent = '✅ Thumbnail loaded successfully!';
-        messageDiv.className = 'success';
-
-        copyShareBtn.style.display = 'inline-block';
-        addToRecentSearches(url);
-        trackDownload(videoId);
-      };
-      img.onerror = () => {
-        messageDiv.textContent =
-          '❌ Thumbnail not available for this quality. Try another option.';
-        messageDiv.className = 'error';
-      };
-      img.src = thumbnailURL;
-    });
-
-    // Admin controls: show analytics if admin=true in URL
-    const isAdmin = new URLSearchParams(window.location.search).get('admin') === 'true';
-    if (isAdmin) {
-      adminControls.style.display = 'block';
-      viewAnalyticsBtn.addEventListener('click', () => {
-        const data = getAnalytics();
-        analyticsOutput.textContent = JSON.stringify(data, null, 2);
-        renderChart(data);
-      });
-    }
-
-    // Load from URL param ?url= to prefill input and auto-run
-    window.addEventListener('DOMContentLoaded', () => {
-      renderRecentSearches();
-      const params = new URLSearchParams(window.location.search);
-      const presetURL = params.get('url');
-      if (presetURL) {
-        inputURL.value = presetURL;
-        downloadBtn.click();
-      }
-    });
-  </script>
-</body>
-</html>
+     
