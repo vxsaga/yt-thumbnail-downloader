@@ -3,227 +3,229 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>YouTube Thumbnail & Shorts Downloader</title>
-  <link rel="icon" href="https://www.youtube.com/s/desktop/6bde7cdb/img/favicon_32x32.png">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <title>YouTube Thumbnail Downloader</title>
+  <link rel="icon" href="https://www.youtube.com/s/desktop/6e4b2f4e/img/favicon_144.png" />
   <style>
+    :root {
+      --bg: #f4f4f4;
+      --text: #222;
+      --card: #fff;
+      --accent: #ff0000;
+    }
+    .dark {
+      --bg: #121212;
+      --text: #eee;
+      --card: #1e1e1e;
+    }
     body {
+      margin: 0;
       font-family: Arial, sans-serif;
-      background-color: #121212;
-      color: #fff;
-      text-align: center;
-      padding: 20px;
+      background: var(--bg);
+      color: var(--text);
+      transition: 0.3s;
     }
-    h1 {
-      font-size: 24px;
+    header {
       display: flex;
-      justify-content: center;
       align-items: center;
-      gap: 10px;
+      justify-content: space-between;
+      background: var(--card);
+      padding: 1rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
-    h1 img {
-      height: 28px;
+    header img {
+      height: 32px;
     }
-    input, select, button {
-      padding: 12px;
-      margin: 10px 0;
-      border-radius: 5px;
-      font-size: 16px;
-      width: 100%;
-      max-width: 600px;
-      box-sizing: border-box;
+    header h1 {
+      font-size: 1.2rem;
+      margin: 0;
     }
-    input, select {
-      background-color: #1e1e1e;
-      color: #fff;
-      border: 1px solid #333;
+    #theme-toggle {
+      background: transparent;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+    main {
+      padding: 2rem 1rem;
+      text-align: center;
+    }
+    .subheading {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+    input[type="text"] {
+      width: 90%;
+      max-width: 400px;
+      padding: 10px;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
     }
     button {
-      background-color: #e50914;
-      color: white;
+      margin-top: 1rem;
+      padding: 10px 20px;
+      background: var(--accent);
+      color: #fff;
       border: none;
+      border-radius: 8px;
+      font-size: 1rem;
       cursor: pointer;
+      transition: 0.2s ease;
     }
     button:hover {
-      background-color: #bf0811;
+      opacity: 0.9;
     }
-    #result img, #shorts-result img {
+    #examples {
+      margin-top: 2rem;
+    }
+    .example-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .example-buttons button {
+      background: #666;
+      color: #fff;
+      font-size: 0.9rem;
+    }
+    #thumbnail-result {
+      margin-top: 2rem;
+    }
+    #thumbnail-result img {
       max-width: 100%;
-      border-radius: 8px;
+      height: auto;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .button-row {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 10px;
+    }
+    #qr-code {
       margin-top: 20px;
     }
-    .video-download-link, .recent-btn {
-      display: inline-block;
-      margin-top: 10px;
-      color: #00f;
-      text-decoration: none;
-      font-weight: bold;
+    footer {
+      text-align: center;
+      font-size: 0.9rem;
+      padding: 1rem;
+      background: var(--card);
+      color: var(--text);
     }
-    .video-download-link:hover, .recent-btn:hover {
-      text-decoration: underline;
+    .hidden {
+      display: none;
     }
-    .success { color: lightgreen; }
-    .error { color: #ff4d4d; }
-    small {
-      display: block;
-      margin-top: 10px;
-      color: gray;
-    }
-    #recent-searches button {
-      background: #333;
-      color: #eee;
-      border: none;
-      margin: 4px;
-      padding: 6px 10px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-    canvas { margin-top: 30px; }
   </style>
 </head>
 <body>
-  <h1>
-    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg" alt="YouTube Logo">
-    YouTube Thumbnail & Shorts Downloader
-  </h1>
+  <header>
+    <img src="https://www.youtube.com/s/desktop/6e4b2f4e/img/favicon_144.png" alt="YouTube" />
+    <h1>YouTube Thumbnail Downloader</h1>
+    <button id="theme-toggle">🌙</button>
+  </header>
 
-  <input type="text" id="youtube-url" placeholder="Paste YouTube Video URL..." />
-  <div id="recent-searches"></div>
-  <select id="quality">
-    <option value="maxresdefault">Max Resolution</option>
-    <option value="hqdefault">High Quality</option>
-    <option value="mqdefault">Medium Quality</option>
-    <option value="sddefault">Standard Definition</option>
-  </select>
-  <button id="download-btn">Get Thumbnail</button>
+  <main>
+    <p class="subheading">Paste a YouTube link below to get the thumbnail</p>
+    <input type="text" id="youtube-url" placeholder="Paste YouTube video URL here..." />
+    <button id="get-thumbnail">Get Thumbnail</button>
 
-  <p id="copy-status"></p>
-  <div id="message"></div>
-  <div id="result"></div>
+    <div id="examples">
+      <p>Or try these trending videos:</p>
+      <div class="example-buttons">
+        <button data-url="https://www.youtube.com/watch?v=dQw4w9WgXcQ">Example 1</button>
+        <button data-url="https://www.youtube.com/watch?v=9bZkp7q19f0">Example 2</button>
+        <button data-url="https://www.youtube.com/watch?v=3JZ_D3ELwOQ">Example 3</button>
+      </div>
+    </div>
 
-  <hr style="margin: 40px 0; border-color: #333;">
+    <div id="thumbnail-result" class="hidden">
+      <img id="thumbnail-img" src="" alt="YouTube Thumbnail" />
+      <div class="button-row">
+        <button id="copy-link">📋 Copy Image Link</button>
+        <button id="show-qr">📱 Show QR</button>
+      </div>
+      <canvas id="qr-code" class="hidden"></canvas>
+    </div>
+  </main>
 
-  <input type="text" id="shorts-url" placeholder="Paste YouTube Shorts URL..." />
-  <button id="shorts-download-btn">Get Shorts Video</button>
+  <footer>
+    Built by <a href="https://github.com/vxsaga">vxsaga</a> · No ads · 100% free
+  </footer>
 
-  <div id="shorts-message"></div>
-  <div id="shorts-result"></div>
-
-  <div id="admin-controls" style="display:none;">
-    <button id="view-analytics">View Analytics (JSON)</button>
-    <pre id="analytics-output"></pre>
-    <canvas id="analytics-chart" width="400" height="200"></canvas>
-  </div>
-
-  <small>Downloads powered by a third-party service. We do not host or store any videos.</small>
-
+  <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
   <script>
-    const downloadBtn = document.getElementById("download-btn");
-    const resultDiv = document.getElementById("result");
-    const messageDiv = document.getElementById("message");
-    const copyStatus = document.getElementById("copy-status");
+    const input = document.getElementById("youtube-url");
+    const button = document.getElementById("get-thumbnail");
+    const result = document.getElementById("thumbnail-result");
+    const img = document.getElementById("thumbnail-img");
+    const copyBtn = document.getElementById("copy-link");
+    const themeToggle = document.getElementById("theme-toggle");
+    const qrCanvas = document.getElementById("qr-code");
+    const showQR = document.getElementById("show-qr");
+    const exampleButtons = document.querySelectorAll(".example-buttons button");
 
-    downloadBtn.addEventListener("click", () => {
-      const url = document.getElementById("youtube-url").value;
-      const quality = document.getElementById("quality").value;
-      const videoId = extractVideoID(url);
+    // Load last search
+    window.addEventListener("DOMContentLoaded", () => {
+      const lastUrl = localStorage.getItem("lastYTUrl");
+      if (lastUrl) input.value = lastUrl;
+    });
 
+    // Extract video ID from URL
+    function extractYouTubeID(url) {
+      const regex = /(?:youtu\.be\/|youtube\.com\/(?:watch\\?v=|embed\/|v\/))([\\w-]{11})/;
+      const match = url.match(regex);
+      return match ? match[1] : null;
+    }
+
+    // Generate thumbnail
+    function loadThumbnail(url) {
+      const videoId = extractYouTubeID(url);
       if (videoId) {
-        const thumbnailURL = `https://img.youtube.com/vi/${videoId}/${quality}.jpg`;
-        const downloadPageURL = `https://en.savefrom.net/1-Youtube-video-downloader.php?url=https://www.youtube.com/watch?v=${videoId}`;
-        resultDiv.innerHTML = `
-          <img src="${thumbnailURL}" alt="Thumbnail" />
-          <br><a href="${thumbnailURL}" download>Download Thumbnail</a>
-          <br><a href="${downloadPageURL}" target="_blank" class="video-download-link">⬇️ Download Video</a>
-          <br><button onclick="copyShareableLink('${url}')">🔗 Copy Shareable Link</button>
-        `;
-        messageDiv.textContent = "✅ Thumbnail loaded successfully!";
-        messageDiv.className = "success";
-        saveSearch(url);
-        trackDownload(videoId);
+        const thumbUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+        img.src = thumbUrl;
+        result.classList.remove("hidden");
+        qrCanvas.classList.add("hidden");
+        localStorage.setItem("lastYTUrl", url);
       } else {
-        resultDiv.innerHTML = '';
-        messageDiv.textContent = "❌ Invalid YouTube URL. Please try again.";
-        messageDiv.className = "error";
+        alert("Invalid YouTube URL");
       }
+    }
+
+    button.addEventListener("click", () => {
+      const url = input.value.trim();
+      loadThumbnail(url);
     });
 
-    const shortsBtn = document.getElementById("shorts-download-btn");
-    const shortsInput = document.getElementById("shorts-url");
-    const shortsResultDiv = document.getElementById("shorts-result");
-    const shortsMessageDiv = document.getElementById("shorts-message");
-
-    shortsBtn.addEventListener("click", () => {
-      const url = shortsInput.value.trim();
-      shortsMessageDiv.textContent = '';
-      shortsResultDiv.innerHTML = '';
-
-      const shortsID = extractVideoID(url);
-      if (!shortsID) {
-        shortsMessageDiv.textContent = '❌ Invalid YouTube Shorts URL. Please try again.';
-        shortsMessageDiv.className = 'error';
-        return;
-      }
-
-      const thumbnailURL = `https://img.youtube.com/vi/${shortsID}/maxresdefault.jpg`;
-      const downloadShortURL = `https://en.savefrom.net/1-Youtube-video-downloader.php?url=https://www.youtube.com/watch?v=${shortsID}`;
-
-      shortsMessageDiv.textContent = '✅ Shorts thumbnail loaded!';
-      shortsMessageDiv.className = 'success';
-
-      shortsResultDiv.innerHTML = `
-        <img src="${thumbnailURL}" alt="Shorts Thumbnail" />
-        <br><a href="https://youtube.com/shorts/${shortsID}" target="_blank" class="video-download-link">▶️ Watch on YouTube</a>
-        <br><a href="${downloadShortURL}" target="_blank" class="video-download-link">⬇️ Download Shorts Video</a>
-      `;
+    copyBtn.addEventListener("click", () => {
+      navigator.clipboard.writeText(img.src).then(() => {
+        copyBtn.innerText = "✅ Copied!";
+        setTimeout(() => (copyBtn.innerText = "📋 Copy Image Link"), 2000);
+      });
     });
 
-    function extractVideoID(url) {
-      try {
-        const parsed = new URL(url);
-        const hostname = parsed.hostname;
+    showQR.addEventListener("click", () => {
+      const qr = new QRious({
+        element: qrCanvas,
+        value: img.src,
+        size: 200,
+      });
+      qrCanvas.classList.remove("hidden");
+    });
 
-        if (hostname.includes("youtu.be")) {
-          return parsed.pathname.split("/")[1];
-        } else if (parsed.searchParams.has("v")) {
-          return parsed.searchParams.get("v");
-        } else if (parsed.pathname.startsWith("/embed/")) {
-          return parsed.pathname.split("/embed/")[1];
-        } else if (parsed.pathname.startsWith("/shorts/")) {
-          return parsed.pathname.split("/shorts/")[1];
-        }
-      } catch (e) {
-        return null;
-      }
-      return null;
-    }
+    themeToggle.addEventListener("click", () => {
+      document.body.classList.toggle("dark");
+      themeToggle.textContent = document.body.classList.contains("dark") ? "☀️" : "🌙";
+    });
 
-    function saveSearch(url) {
-      let history = JSON.parse(localStorage.getItem("recentSearches") || "[]");
-      if (!history.includes(url)) {
-        history.unshift(url);
-        if (history.length > 5) history = history.slice(0, 5);
-        localStorage.setItem("recentSearches", JSON.stringify(history));
-      }
-    }
-
-    function trackDownload(videoId) {
-      const analytics = JSON.parse(localStorage.getItem("analytics") || "{}");
-      if (!analytics[videoId]) analytics[videoId] = { count: 0, lastUsed: "" };
-      analytics[videoId].count += 1;
-      analytics[videoId].lastUsed = new Date().toISOString().split("T")[0];
-      localStorage.setItem("analytics", JSON.stringify(analytics));
-    }
-
-    function copyShareableLink(url) {
-      const fullLink = `${location.origin}${location.pathname}?url=${encodeURIComponent(url)}`;
-      navigator.clipboard.writeText(fullLink)
-        .then(() => {
-          document.getElementById("copy-status").textContent = "🔗 Link copied!";
-          setTimeout(() => document.getElementById("copy-status").textContent = "", 3000);
-        });
-    }
+    exampleButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const url = btn.getAttribute("data-url");
+        input.value = url;
+        loadThumbnail(url);
+      });
+    });
   </script>
 </body>
 </html>
