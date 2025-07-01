@@ -4,6 +4,74 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>YouTube Thumbnail Downloader</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+
+    p {
+      text-align: center;
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    button {
+      padding: 10px;
+      background-color: #2c8ef3;
+      color: white;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #1c6fd0;
+    }
+
+    #thumbnailResult {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+
+    a {
+      display: inline-block;
+      text-decoration: none;
+      color: #2c8ef3;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
   <h1>YouTube Thumbnail Downloader</h1>
@@ -14,7 +82,7 @@
     <button type="submit">Get Thumbnail</button>
   </form>
 
-  <div id="thumbnailResult" style="margin-top: 20px;"></div>
+  <div id="thumbnailResult"></div>
 
   <script>
     document.getElementById('thumbnailForm').addEventListener('submit', function (e) {
@@ -24,7 +92,7 @@
       if (videoId) {
         const thumbnailURL = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
         document.getElementById('thumbnailResult').innerHTML = `
-          <img src="${thumbnailURL}" alt="Thumbnail" width="480"/>
+          <img src="${thumbnailURL}" alt="Thumbnail"/>
           <br/><a href="${thumbnailURL}" download>Download Thumbnail</a>
         `;
       } else {
