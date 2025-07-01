@@ -52,14 +52,14 @@
       border-radius: 8px;
       margin-top: 20px;
     }
-    #shorts-download-link, .video-download-link, .recent-btn {
+    .video-download-link, .recent-btn {
       display: inline-block;
       margin-top: 10px;
       color: #00f;
       text-decoration: none;
       font-weight: bold;
     }
-    #shorts-download-link:hover, .video-download-link:hover, .recent-btn:hover {
+    .video-download-link:hover, .recent-btn:hover {
       text-decoration: underline;
     }
     .success { color: lightgreen; }
@@ -131,7 +131,7 @@
 
       if (videoId) {
         const thumbnailURL = `https://img.youtube.com/vi/${videoId}/${quality}.jpg`;
-        const downloadPageURL = `https://www.y2mate.is/youtube/${videoId}`;
+        const downloadPageURL = `https://www.y2mate.com/youtube/${videoId}`;
         resultDiv.innerHTML = `
           <img src="${thumbnailURL}" alt="Thumbnail" />
           <br><a href="${thumbnailURL}" download>Download Thumbnail</a>
@@ -235,7 +235,6 @@
       });
     }
 
-    // Shorts Logic
     const shortsBtn = document.getElementById("shorts-download-btn");
     const shortsInput = document.getElementById("shorts-url");
     const shortsResultDiv = document.getElementById("shorts-result");
@@ -254,14 +253,14 @@
       }
 
       const thumbnailURL = `https://img.youtube.com/vi/${shortsID}/maxresdefault.jpg`;
-      const downloadShortURL = `https://www.y2mate.is/youtube/${shortsID}`;
+      const downloadShortURL = `https://www.y2mate.com/youtube/${shortsID}`;
 
       shortsMessageDiv.textContent = '✅ Shorts thumbnail loaded!';
       shortsMessageDiv.className = 'success';
 
       shortsResultDiv.innerHTML = `
         <img src="${thumbnailURL}" alt="Shorts Thumbnail" />
-        <br><a href="https://youtube.com/shorts/${shortsID}" target="_blank" id="shorts-download-link">▶️ Watch on YouTube</a>
+        <br><a href="https://youtube.com/shorts/${shortsID}" target="_blank" class="video-download-link">▶️ Watch on YouTube</a>
         <br><a href="${downloadShortURL}" target="_blank" class="video-download-link">⬇️ Download Shorts Video</a>
       `;
     });
